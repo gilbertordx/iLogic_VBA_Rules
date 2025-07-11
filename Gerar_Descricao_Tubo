@@ -1,0 +1,26 @@
+Sub Main()
+    Dim altura As Double = ALTURA
+    Dim largura As Double = LARGURA
+    Dim espessura As Double = ESPESSURA
+    Dim comprimento As Double = COMPRIMENTO
+    Dim matRaw As String = iProperties.Material()
+    Dim materialUp As String = If(String.IsNullOrWhiteSpace(matRaw), "MATERIAL DESCONHECIDO", matRaw).ToUpperInvariant()
+
+    If Not ValidarParametros(altura, largura, espessura, comprimento) Then
+        MessageBox.Show("Parâmetros inválidos para descrição do tubo!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Exit Sub
+    End If
+
+    Dim desc As String = MontarDescricaoTubo(altura, largura, espessura, comprimento, materialUp)
+    iProperties.Value("Project", "Description") = desc
+    iProperties.Value("Project", "Part Number") = desc
+End Sub
+
+Private Function ValidarParametros(alt As Double, larg As Double, esp As Double, comp As Double) As Boolean
+    If alt <= 0 Or larg <= 0 Or esp <= 0 Or comp <= 0 Then Return False
+    Return True
+End Function
+
+Private Function MontarDescricaoTubo(alt As Double, larg As Double, esp As Double, comp As Double, mat As String) As String
+    Return $"TUBO {alt} × {larg} × {esp} | {mat} | COMP. {comp} mm"
+End Function

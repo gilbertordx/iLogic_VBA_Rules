@@ -1,0 +1,48 @@
+' Gerador automático de tubos de várias seções em batch a partir de templates
+
+Dim tubos = {
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 50 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 50 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 1860},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 50 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 50 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 1970},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 50 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 50 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 1650},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 50 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 50 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 721.249},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 50 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 50 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 655},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 40 × 40 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 40 × 40 × 1,2 _ AÇO, CARBONO", .comprimento = 150},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 40 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 40 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 955},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 30 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 30 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 1970},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 30 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 30 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 675},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 20 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 20 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 955},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 20 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 20 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 310},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 20 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 20 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 270},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 20 × 20 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 20 × 20 × 1,2 _ AÇO, CARBONO", .comprimento = 250},
+    New With {.template = "D:\ENGENHARIA\04_TEMPLATE\TUBOS\TUBO 15 × 15 × 1,2 _ AÇO, CARBONO _ COMP. 300 mm.ipt", .nome = "TUBO 15 × 15 × 1,2 _ AÇO, CARBONO", .comprimento = 50}
+}
+
+Dim destinoDir As String = "D:\ENGENHARIA\02_CLIENTES\KI_JOIA\01_PECAS\ESTRUTURA\"
+
+For Each tubo In tubos
+    Dim novoNome As String = tubo.nome & " _ COMP. " & tubo.comprimento & " mm.ipt"
+    For Each c As Char In System.IO.Path.GetInvalidFileNameChars()
+        novoNome = novoNome.Replace(c, "_"c)
+    Next
+    Dim novoCaminho As String = destinoDir & novoNome
+
+    If System.IO.File.Exists(novoCaminho) Then
+        MessageBox.Show("O arquivo já existe: " & novoCaminho & vbCrLf & "Escolha outro nome ou exclua o arquivo existente.", "Atenção")
+        Continue For
+    End If
+
+    Dim oDoc As PartDocument
+    oDoc = ThisApplication.Documents.Open(tubo.template, False)
+    oDoc.ComponentDefinition.Parameters("COMPRIMENTO").Expression = tubo.comprimento & " mm"
+    oDoc.Update()
+
+    Try
+        iLogicVb.RunRule(oDoc, "Gerar_Descricao_Tubo")
+    Catch
+    End Try
+
+    oDoc.SaveAs(novoCaminho, False)
+    oDoc.Close
+Next
+
+MessageBox.Show("Tubos gerados com sucesso!", "Gerador de Peças em Batch") 

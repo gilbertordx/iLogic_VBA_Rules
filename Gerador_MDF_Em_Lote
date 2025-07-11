@@ -1,0 +1,66 @@
+' Gerador automático de peças MDF 15MM em batch a partir de template
+Dim templatePath15 As String = "D:\ENGENHARIA\04_TEMPLATE\MDF\MDF 15MM _ 2750 × 1850 _ PADRAO 01.ipt"
+Dim destinoDir As String = "D:\ENGENHARIA\02_CLIENTES\CAMBUI\VITRINE DE PAES\01_PECAS\MDF\"
+
+' Lista de peças a serem geradas: {comprimento, largura}
+Dim pecas As Object(,)
+pecas = {
+    {900, 420},
+    {900, 405},
+    {900, 280},
+    {900, 265},
+    {870, 370},
+    {830, 100},
+    {820, 45},
+    {390, 420},
+    {370, 120},
+    {300, 100},
+    {255, 120},
+    {215, 120},
+    {205, 100},
+    {300, 235},
+    {900, 830},
+    {830, 237},
+    {830, 124}
+}
+
+For i As Integer = 0 To UBound(pecas)
+    Dim esp As Double = 15
+    Dim comp As Double = pecas(i, 0)
+    Dim larg As Double = pecas(i, 1)
+
+    ' Gera nome do arquivo
+    Dim novoNome As String = $"MDF {esp}MM _ {comp} × {larg}.ipt"
+    For Each c As Char In System.IO.Path.GetInvalidFileNameChars()
+        novoNome = novoNome.Replace(c, "_"c)
+    Next
+    Dim novoCaminho As String = destinoDir & novoNome
+
+    ' Verifica se o arquivo já existe
+    If System.IO.File.Exists(novoCaminho) Then
+        MessageBox.Show("O arquivo já existe: " & novoCaminho & vbCrLf & "Escolha outro nome ou exclua o arquivo existente.", "Atenção")
+        Continue For
+    End If
+
+    ' Abre o template
+    Dim oDoc As PartDocument
+    oDoc = ThisApplication.Documents.Open(templatePath15, False)
+
+    ' Atribui os parâmetros explicitamente em mm
+    oDoc.ComponentDefinition.Parameters("ESPESSURA").Expression = esp & " mm"
+    oDoc.ComponentDefinition.Parameters("COMPRIMENTO").Expression = comp & " mm"
+    oDoc.ComponentDefinition.Parameters("LARGURA").Expression = larg & " mm"
+
+    oDoc.Update()
+
+    ' (Opcional) Executa regra de descrição/código, se existir
+    Try
+        iLogicVb.RunRule(oDoc, "Gerar_Descricao_MDF")
+    Catch
+    End Try
+
+    oDoc.SaveAs(novoCaminho, False)
+    oDoc.Close
+Next
+
+MessageBox.Show("Peças MDF geradas com sucesso!", "Gerador MDF em Lote") 

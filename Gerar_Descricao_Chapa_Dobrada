@@ -1,0 +1,26 @@
+Sub Main()
+    Dim comprimento As Double = COMPRIMENTO
+    Dim larguraFixa As Double = 77.506 ' valor fixo conforme exemplo
+    Dim matRaw As String = iProperties.Material()
+    Dim materialUp As String = If(String.IsNullOrWhiteSpace(matRaw), "MATERIAL DESCONHECIDO", matRaw).ToUpperInvariant()
+    Dim bitola As String = "#16" ' bitola fixa conforme exemplo
+
+    If Not ValidarParametros(comprimento, materialUp) Then
+        MessageBox.Show("Parâmetros inválidos para descrição da chapa dobrada!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Exit Sub
+    End If
+
+    Dim desc As String = MontarDescricaoChapaDobrada(materialUp, bitola, comprimento, larguraFixa)
+    iProperties.Value("Project", "Description") = desc
+    iProperties.Value("Project", "Part Number") = desc
+End Sub
+
+Private Function ValidarParametros(comp As Double, mat As String) As Boolean
+    If comp <= 0 Then Return False
+    If String.IsNullOrWhiteSpace(mat) Then Return False
+    Return True
+End Function
+
+Private Function MontarDescricaoChapaDobrada(mat As String, bitola As String, comp As Double, larg As Double) As String
+    Return $"CHAPA {mat} {bitola} | {comp} × {larg} |"
+End Function 

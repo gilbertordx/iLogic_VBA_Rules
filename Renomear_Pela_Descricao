@@ -1,0 +1,83 @@
+Option Strict On
+
+Sub Main()
+    Try
+        Dim doc As PartDocument = TryCast(ThisApplication.ActiveDocument, PartDocument)
+        If doc Is Nothing Then Exit Sub
+
+        Dim originalPath As String = doc.FullFileName
+        If String.IsNullOrEmpty(originalPath) Then Exit Sub
+
+        Dim description As String = ObterDescricaoValida(doc)
+        Dim sanitized As String = SanitizeFileName(description)
+        Dim newPath As String = GetNewFullPath(originalPath, sanitized)
+        If String.Equals(originalPath, newPath, StringComparison.OrdinalIgnoreCase) Then Exit Sub
+
+        AtualizarPartNumber(doc, description)
+        SaveDocument(doc, newPath)
+    Catch ex As Exception
+        LogError("Erro inesperado em RenameWithDescription: " & ex.ToString())
+        MsgBox("Erro inesperado. Veja o log para mais detalhes.", MsgBoxStyle.Critical, "RenameWithDescription")
+    End Try
+End Sub
+
+Private Sub AtualizarPartNumber(ByVal doc As PartDocument, ByVal partNumber As String)
+    Try
+        doc.PropertySets("Design Tracking Properties").Item("Part Number").Value = partNumber
+    Catch ex As Exception
+        LogError("Falha ao atualizar Part Number: " & ex.Message)
+    End Try
+End Sub
+
+Private Function ObterDescricaoValida(ByVal doc As PartDocument) As String
+    Dim propSet As PropertySet = doc.PropertySets("Design Tracking Properties")
+    Try
+        Dim desc As String = propSet.Item("Description").Value.ToString()
+        If String.IsNullOrWhiteSpace(desc) Then Throw New Exception("Descrição vazia")
+        Return desc
+    Catch ex As Exception
+        Dim msg As String = "iProperty 'Description' não encontrada ou inválida: " & ex.Message
+        LogError(msg)
+        Throw New Exception(msg)
+    End Try
+End Function
+
+Private Function SanitizeFileName(ByVal Text As String) As String
+    Dim result As String = Text
+    For Each c As Char In System.IO.Path.GetInvalidFileNameChars()
+        result = result.Replace(c, "_"c)
+    Next
+    Return result
+End Function
+
+Private Function GetNewFullPath(ByVal originalFullPath As String, ByVal newFileName As String) As String
+    Dim folder As String = System.IO.Path.GetDirectoryName(originalFullPath)
+    If String.IsNullOrEmpty(folder) Then Throw New Exception("Pasta do documento não encontrada")
+    Dim ext As String = System.IO.Path.GetExtension(originalFullPath)
+    Return System.IO.Path.Combine(folder, newFileName & ext)
+End Function
+
+Private Sub SaveDocument(ByVal doc As PartDocument, ByVal path As String)
+    Try
+        doc.SaveAs(path, False)
+    Catch ex As Exception
+        LogError("Falha ao salvar documento: " & ex.Message)
+        Throw
+    End Try
+End Sub
+
+Private Sub LogError(ByVal message As String)
+    Try
+        Dim doc As PartDocument = TryCast(ThisApplication.ActiveDocument, PartDocument)
+        If doc Is Nothing Then Exit Sub
+
+        Dim folder As String = System.IO.Path.GetDirectoryName(doc.FullFileName)
+        If String.IsNullOrEmpty(folder) Then Exit Sub
+
+        Dim logPath As String = System.IO.Path.Combine(folder, "iLogicErrors.log")
+        Dim entry As String = DateTime.Now.ToString("s") & " - " & message & vbCrLf
+        System.IO.File.AppendAllText(logPath, entry)
+    Catch
+        ' Ignora falhas de log para não interromper o fluxo
+    End Try
+End Sub

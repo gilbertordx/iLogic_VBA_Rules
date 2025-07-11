@@ -1,0 +1,41 @@
+Sub Main()
+    ' Parâmetros esperados: TEMP_LUZ (texto), COMPRIMENTO (numérico)
+    Dim tempRaw As String = ""
+    Dim comprimento As Double = 0
+
+    Try
+        tempRaw = TEMP_LUZ
+        comprimento = COMPRIMENTO
+    Catch
+        MessageBox.Show("Defina os parâmetros TEMP_LUZ (cor/temperatura) e COMPRIMENTO!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Exit Sub
+    End Try
+
+    Dim tempPadrao As String = NormalizarTemperatura(tempRaw)
+    If comprimento <= 0 Or String.IsNullOrWhiteSpace(tempPadrao) Then
+        MessageBox.Show("Parâmetros inválidos para descrição da luminária!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Exit Sub
+    End If
+
+    Dim desc As String = $"LUMINÁRIA LED C RABICHO | {tempPadrao} | {comprimento} mm"
+    iProperties.Value("Project", "Description") = desc
+    iProperties.Value("Project", "Part Number") = desc
+End Sub
+
+Private Function NormalizarTemperatura(temp As String) As String
+    temp = temp.Trim().ToLowerInvariant()
+    Select Case temp
+        Case "quente", "warm"
+            Return "3000K"
+        Case "neutra", "neutral"
+            Return "4000K"
+        Case "fria", "frio", "cold"
+            Return "6500K"
+        Case Else
+            ' Se já está no formato 3000K, 4000K, etc, retorna como está
+            If temp Like "*k" Or temp Like "*K" Then
+                Return temp.ToUpperInvariant()
+            End If
+            Return ""
+    End Select
+End Function 

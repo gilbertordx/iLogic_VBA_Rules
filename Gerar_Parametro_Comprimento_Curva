@@ -1,0 +1,41 @@
+Sub Main()
+    Dim oDoc As PartDocument
+    Dim oCurve As SketchEntity
+    Dim oParameters As Inventor.Parameters
+    Dim oSketchName As String = "Comprimento"
+    Dim oParamName As String = "COMPRIMENTO"
+
+    On Error GoTo Handler
+    oDoc = ThisDoc.Document
+    oCurve = oDoc.ComponentDefinition.Sketches(oSketchName).SketchLines(1)
+    oParameters = oDoc.ComponentDefinition.Parameters
+
+    AtualizarComprimento(oParameters, oParamName, oCurve)
+    iLogicVb.UpdateWhenDone = True
+    Exit Sub
+Handler:
+    LogError("Erro ao calcular comprimento da curva: " & Err.Description)
+    MsgBox("Erro ao calcular comprimento da curva. Veja o log para detalhes.", vbCritical, "iLogic")
+End Sub
+
+Private Sub AtualizarComprimento(oParameters As Inventor.Parameters, oParamName As String, oCurve As SketchEntity)
+    On Error Resume Next
+    oParameters.Item(oParamName).Value = ThisApplication.MeasureTools.GetLoopLength(oCurve)
+    If Err.Number <> 0 Then
+        Dim oUserParam As UserParameter
+        oUserParam = oParameters.UserParameters.AddByValue(oParamName, 1, "mm")
+        oParameters.Item(oParamName).Value = ThisApplication.MeasureTools.GetLoopLength(oCurve)
+    End If
+    On Error GoTo 0
+End Sub
+
+Private Sub LogError(message As String)
+    On Error Resume Next
+    Dim oDoc As PartDocument
+    oDoc = ThisDoc.Document
+    Dim folder As String = System.IO.Path.GetDirectoryName(oDoc.FullFileName)
+    If String.IsNullOrEmpty(folder) Then Exit Sub
+    Dim logPath As String = System.IO.Path.Combine(folder, "iLogicErrors.log")
+    Dim entry As String = Now.ToString("s") & " - " & message & vbCrLf
+    System.IO.File.AppendAllText(logPath, entry)
+End Sub
