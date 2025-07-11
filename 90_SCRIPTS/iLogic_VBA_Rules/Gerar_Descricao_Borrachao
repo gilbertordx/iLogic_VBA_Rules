@@ -1,0 +1,23 @@
+Sub Main()
+    Dim comprimento As Double = COMPRIMENTO
+    Dim altura As Double = ALTURA
+    Dim largura As Double = LARGURA
+
+    If Not ValidarParametros(comprimento, altura, largura) Then
+        MessageBox.Show("Parâmetros inválidos para descrição do borrachão!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Exit Sub
+    End If
+
+    Dim desc As String = MontarDescricaoBorrachao(comprimento, altura, largura)
+    iProperties.Value("Project", "Description") = desc
+    iProperties.Value("Project", "Part Number") = desc
+End Sub
+
+Private Function ValidarParametros(comp As Double, alt As Double, larg As Double) As Boolean
+    If comp <= 0 Or alt <= 0 Or larg <= 0 Then Return False
+    Return True
+End Function
+
+Private Function MontarDescricaoBorrachao(comp As Double, alt As Double, larg As Double) As String
+    Return $"PERFIL T BORRACHÃO | PARACHOQUE | {alt} × {larg}MM | COMP. {comp} mm"
+End Function 

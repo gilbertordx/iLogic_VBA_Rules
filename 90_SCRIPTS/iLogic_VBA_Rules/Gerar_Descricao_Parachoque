@@ -1,0 +1,23 @@
+Sub Main()
+    Dim comprimento As Double = COMPRIMENTO
+    Dim largura As Double = LARGURA
+    Dim altura As Double = ALTURA
+
+    If Not ValidarParametros(comprimento, largura, altura) Then
+        MessageBox.Show("Parâmetros inválidos para descrição do parachoque!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Exit Sub
+    End If
+
+    Dim desc As String = MontarDescricaoParachoque(comprimento, largura, altura)
+    iProperties.Value("Project", "Description") = desc
+    iProperties.Value("Project", "Part Number") = desc
+End Sub
+
+Private Function ValidarParametros(comp As Double, larg As Double, alt As Double) As Boolean
+    If comp <= 0 Or larg <= 0 Or alt <= 0 Then Return False
+    Return True
+End Function
+
+Private Function MontarDescricaoParachoque(comp As Double, larg As Double, alt As Double) As String
+    Return $"PARACHOQUE PINUS {larg} × {alt}MM | COMP. {comp} mm"
+End Function 
